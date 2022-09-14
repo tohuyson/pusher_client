@@ -127,8 +127,8 @@ class PusherService : MChannel {
     private fun disconnect(result: Result) {
         _pusherInstance?.disconnect()
         debugLog("Disconnect")
-        result.success(null)
         _pusherInstance = null;
+        result.success(null) 
     }
 
     private fun getSocketId(result: Result) {
