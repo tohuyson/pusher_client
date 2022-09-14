@@ -16,7 +16,7 @@ class PusherService: MChannel {
     static let PRIVATE_ENCRYPTED_PREFIX = "private-encrypted-"
     static let PRESENCE_PREFIX = "presence-"
     
-    private var _pusherInstance: Pusher!
+    private var _pusherInstance: Pusher? = nil
     private var bindedEvents = Dictionary<String, String>()
     
     struct Utils {
@@ -84,10 +84,10 @@ class PusherService: MChannel {
                 )
                 
                 _pusherInstance = Pusher(key: pusherArgs.appKey, options: pusherOptions)
-                _pusherInstance.connection.reconnectAttemptsMax = pusherArgs.pusherOptions.maxReconnectionAttempts
-                _pusherInstance.connection.maxReconnectGapInSeconds = Double(pusherArgs.pusherOptions.maxReconnectGapInSeconds)
-                _pusherInstance.connection.pongResponseTimeoutInterval = Double(pusherArgs.pusherOptions.pongTimeout) / 1000
-                _pusherInstance.connection.delegate = ConnectionListener.default
+                _pusherInstance!.connection.reconnectAttemptsMax = pusherArgs.pusherOptions.maxReconnectionAttempts
+                _pusherInstance!.connection.maxReconnectGapInSeconds = Double(pusherArgs.pusherOptions.maxReconnectGapInSeconds)
+                _pusherInstance!.connection.pongResponseTimeoutInterval = Double(pusherArgs.pusherOptions.pongTimeout) / 1000
+                _pusherInstance!.connection.delegate = ConnectionListener.default
                 Utils.debugLog(msg: "Pusher initialized")
                 
                 result(nil)
@@ -100,18 +100,19 @@ class PusherService: MChannel {
     }
     
     func connect(result:@escaping FlutterResult) {
-        _pusherInstance.connect()
+        _pusherInstance?.connect()
         result(nil)
     }
     
     func disconnect(result:@escaping FlutterResult) {
-        _pusherInstance.disconnect()
+        _pusherInstance?.disconnect()
         Utils.debugLog(msg: "Disconnect")
+        _pusherInstance = nil
         result(nil)
     }
     
     func getSocketId(result:@escaping FlutterResult) {
-        result(_pusherInstance.connection.socketId)
+        result(_pusherInstance?.connection.socketId)
     }
     
     func subscribe(_ call:FlutterMethodCall, result:@escaping FlutterResult) {
@@ -120,9 +121,9 @@ class PusherService: MChannel {
         var channel: PusherChannel
         
         if(!channelName.starts(with: PusherService.PRESENCE_PREFIX)) {
-            channel = _pusherInstance.subscribe(channelName)
+            channel = _pusherInstance!.subscribe(channelName)
         } else {
-            channel = _pusherInstance.subscribeToPresenceChannel(channelName: channelName)
+            channel = _pusherInstance!.subscribeToPresenceChannel(channelName: channelName)
             for pEvent in Constants.PresenceEvents.allCases {
                 channel.bind(eventName: pEvent.rawValue, eventCallback: ChannelEventListener.default.onEvent)
             }
@@ -140,7 +141,7 @@ class PusherService: MChannel {
         let channelMap = call.arguments as! [String: String]
         let channelName: String = channelMap["channelName"]!
         
-        _pusherInstance.unsubscribe(channelName)
+        _pusherInstance!.unsubscribe(channelName)
         Utils.debugLog(msg: "Unsubscribed: \(channelName)")
         
         result(nil)
@@ -156,10 +157,10 @@ class PusherService: MChannel {
         var channel: PusherChannel
         
         if(!channelName.starts(with: PusherService.PRESENCE_PREFIX)) {
-            channel = _pusherInstance.connection.channels.find(name: channelName)!
+            channel = _pusherInstance!.connection.channels.find(name: channelName)!
             bindedEvents[channelName + eventName] = channel.bind(eventName: eventName, eventCallback: ChannelEventListener.default.onEvent)
         } else {
-            channel = _pusherInstance.connection.channels.findPresence(name: channelName)!
+            channel = _pusherInstance!.connection.channels.findPresence(name: channelName)!
             bindedEvents[channelName + eventName] = channel.bind(eventName: eventName, eventCallback: ChannelEventListener.default.onEvent)
         }
         
@@ -176,10 +177,10 @@ class PusherService: MChannel {
         
         if(callBackId != nil) {
             if(!channelName.starts(with: PusherService.PRESENCE_PREFIX)) {
-                channel = _pusherInstance.connection.channels.find(name: channelName)!
+                channel = _pusherInstance!.connection.channels.find(name: channelName)!
                 channel.unbind(eventName: eventName, callbackId: callBackId!)
             } else {
-                channel = _pusherInstance.connection.channels.findPresence(name: channelName)!
+                channel = _pusherInstance!.connection.channels.findPresence(name: channelName)!
                 channel.unbind(eventName: eventName, callbackId: callBackId!)
             }
         }
@@ -201,10 +202,10 @@ class PusherService: MChannel {
             case _ where channelName.starts(with: PusherService.PRIVATE_ENCRYPTED_PREFIX):
                 result(FlutterError(code: "TRIGGER_ERROR", message: errorMessage, details: nil))
             case _ where channelName.starts(with: PusherService.PRIVATE_PREFIX):
-                let channel: PusherChannel = _pusherInstance.connection.channels.find(name: channelName)!
+                let channel: PusherChannel = _pusherInstance!.connection.channels.find(name: channelName)!
                 channel.trigger(eventName: eventName, data: data)
             case _ where channelName.starts(with: PusherService.PRESENCE_PREFIX):
-                let channel: PusherPresenceChannel = _pusherInstance.connection.channels.findPresence(name: channelName)!
+                let channel: PusherPresenceChannel = _pusherInstance!.connection.channels.findPresence(name: channelName)!
                 channel.trigger(eventName: eventName, data: data)
             default:
                 result(FlutterError(code: "TRIGGER_ERROR", message: errorMessage, details: nil))
