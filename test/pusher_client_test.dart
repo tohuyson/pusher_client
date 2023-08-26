@@ -2,14 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pusher_client/pusher_client.dart';
+import 'dart:developer' as developer;
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
+  TestWidgetsFlutterBinding.ensureInitialized();
   MethodChannel channel =
       const MethodChannel('com.github.chinloyal/pusher_client');
+
   group('PusherClient Test | ', () {
     setUp(() {
-      channel.setMockMethodCallHandler((call) {
+      TestDefaultBinaryMessengerBinding.instance!.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (call) {
+        print(call.method);
         switch (call.method) {
           case 'init':
             return null;
