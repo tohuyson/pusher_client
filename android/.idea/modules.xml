@@ -2,7 +2,10 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/pusher_client.iml" filepath="$PROJECT_DIR$/.idea/modules/pusher_client.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/pusher_client.iml" filepath="$PROJECT_DIR$/.idea/pusher_client.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/pusher_client.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/pusher_client.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/pusher_client.main.iml" filepath="$PROJECT_DIR$/.idea/modules/pusher_client.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/pusher_client.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/pusher_client.unitTest.iml" />
     </modules>
   </component>
 </project>
